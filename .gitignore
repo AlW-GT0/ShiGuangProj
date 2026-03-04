@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Models (exclude all model files)
+*.joblib
+*.pkl
+*.pth
+*.h5
+*.model
+models/
+
+# Results (exclude generated results)
+results/
+*.png
+*.jpg
+*.json
+*.xlsx
+!data/*.xlsx # Keep original data files if needed, or comment this out to exclude all excel files
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
