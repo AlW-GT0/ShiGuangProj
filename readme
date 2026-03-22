@@ -1,6 +1,8 @@
 这是<视光机器学习合并数据版>
+文件夹中的readme应包含：
 execute one by one:
 (baseline2)
 double_data => split_dataset => train_models => subgroup_analysis
+功能介绍...
 (baseline2.1)
-将关键配置移入config.py；修改split_data逻辑以适配config；删去特征重要性部分代码，为模块化做准备；
+...

@@ -4,3 +4,8 @@ execute one by one:
 double_data => split_dataset => train_models => subgroup_analysis
 (baseline2.1)
 将关键配置移入config.py；修改split_data逻辑以适配config；删去特征重要性部分代码，为模块化做准备；
+(baseline2.2)
+向config加入modellist，以便calc_importance遍历所有模型
+double_data => split_dataset => train_models => subgroup_analysis 
+                                             => calc_importance
+calc_importance亟待测试，若不能通过会出现2.2.1版本

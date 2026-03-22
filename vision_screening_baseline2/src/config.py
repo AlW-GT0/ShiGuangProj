@@ -115,6 +115,15 @@ SPLIT_PARAMS = {
     'random_state': 42  # 随机种子
 }
 
+MODEL_LIST = [
+    'XGBoost',
+    'RandomForest',
+    'SVR',
+    'MLP',
+    'LassoCV',
+    'Linear',
+]
+    
 
 # 定义两组特征
 BASIC_FEATURES = [
