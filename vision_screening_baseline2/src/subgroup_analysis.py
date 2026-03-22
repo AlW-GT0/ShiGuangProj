@@ -4,43 +4,14 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from config import FEATURE_MAPPING, SER_GROUPS
+from config import FEATURE_MAPPING, BASIC_FEATURES, FULL_FEATURES, TARGET
+from config import AGE_GROUPS, SER_GROUPS
 
 
 # 目录常量（与训练脚本一致）
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS_DIR = os.path.join(BASE_DIR, 'results')
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
-
-
-# 特征集（与训练脚本一致，保持顺序）
-BASIC_FEATURES = [
-    FEATURE_MAPPING['Age'],
-    FEATURE_MAPPING['Gender'],
-    FEATURE_MAPPING['Wearing refractive correction'],
-    FEATURE_MAPPING['Uncorrected viosual acuity'],
-    FEATURE_MAPPING['District'],
-    FEATURE_MAPPING['Non-cycloplegic SER']
-]
-
-FULL_FEATURES = BASIC_FEATURES + [
-    FEATURE_MAPPING['AL'],
-    FEATURE_MAPPING['Kf'],
-    FEATURE_MAPPING['Ks'],
-    FEATURE_MAPPING['AL/CR'],
-    FEATURE_MAPPING['ACD']
-]
-
-TARGET = FEATURE_MAPPING['Cycloplegic SER']
-
-
-# 年龄亚组（按用户说明）
-AGE_SUBGROUPS = {
-    # '学龄前(4-5岁)': (4, 5),
-    '小学(5-11岁)': (5, 11),
-    '初中(12-15岁)': (12, 15),
-    '高中(16-18岁)': (16, 18)
-}
 
 
 def load_data():
@@ -95,7 +66,7 @@ def label_age_group(age_val):
         age = float(age_val)
     except Exception:
         return None
-    for label, (lo, hi) in AGE_SUBGROUPS.items():
+    for label, (lo, hi) in AGE_GROUPS.items():
         if age >= lo and age <= hi:
             return label
     if age > 15:
@@ -122,7 +93,7 @@ def analyze_subgroups(df, features, target_col, model, scaler, group_type):
     if group_type == 'age':
         age_col = FEATURE_MAPPING['Age']
         data['__group__'] = data[age_col].apply(label_age_group)
-        group_labels = list(AGE_SUBGROUPS.keys())
+        group_labels = list(AGE_GROUPS.keys())
     elif group_type == 'ser':
         data['__group__'] = data[target_col].apply(label_ser_group)
         group_labels = list(SER_GROUPS.keys())

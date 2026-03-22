@@ -42,12 +42,14 @@ def preprocess_data(df):
     if age_col in df.columns:
         # 确保年龄是数值型
         df[age_col] = pd.to_numeric(df[age_col], errors='coerce')
-        # 删除年龄为空或异常的记录
+        # 删除年龄为空或异常的记录 >或年龄不满足实验要求的记录
         initial_count = len(df)
         df = df.dropna(subset=[age_col])
-        df = df[(df[age_col] >= 0) & (df[age_col] <= 100)]
+        df = df[(df[age_col] >= 5) & (df[age_col] <= 18)]
         removed_count = initial_count - len(df)
         print(f"年龄数据处理后: {df.shape} (移除{removed_count}行)")
+    # dfage4 = df.loc[df[age_col]==5]
+    # print(dfage4)
 
     # 3. 处理屈光度数据 - 统一删除缺失值
     for feature, col in FEATURE_MAPPING.items():
@@ -75,11 +77,19 @@ def split_dataset(df, test_size=None, random_state=None):
     if age_col in df.columns:
         # 创建年龄分组
         bins = [group[0] for group in AGE_GROUPS.values()]
-        bins.append(AGE_GROUPS[list(AGE_GROUPS.keys())[-1]][1])  # 添加最后一个上限
+        bins.append(AGE_GROUPS[list(AGE_GROUPS.keys())[-1]][1] + 1)  # 添加最后一个上限
+        bins[0] -= 1
+        print(f'bins: {bins}')
 
         df['Age_Group'] = pd.cut(df[age_col],
                                  bins=bins,
                                  labels=list(AGE_GROUPS.keys()))
+        # 应当注意到cut对左界也是开区间，
+        # 也就是说cut之后年龄为5的（4个）样本均未分到正确的组中
+        # bins[0] -= 1 和 如下代码都可以直接解决这一问题
+        # print(f'分层前数据个数：{df.shape[0]}')
+        # df = df.dropna(subset=['Age_Group'])
+        # print(f'分层后数据个数：{df.shape[0]}')
 
         # 分层抽样
         train_df, val_df = train_test_split(

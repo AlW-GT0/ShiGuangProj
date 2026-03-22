@@ -21,7 +21,7 @@ plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
 plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
 # 导入配置
-from config import FEATURE_MAPPING
+from config import FULL_FEATURES, BASIC_FEATURES, TARGET, FEATURE_MAPPING
 
 plt.rcParams['font.sans-serif'] = ['SimHei']  #
 plt.rcParams['axes.unicode_minus'] = False  #
@@ -35,26 +35,6 @@ VAL_DATA_PATH = os.path.join(RESULTS_DIR, 'validation_dataset.xlsx')
 # 确保模型目录存在
 os.makedirs(MODELS_DIR, exist_ok=True)
 
-# 定义两组特征
-BASIC_FEATURES = [
-    FEATURE_MAPPING['Age'], 
-    FEATURE_MAPPING['Gender'], 
-    FEATURE_MAPPING['Wearing refractive correction'], 
-    FEATURE_MAPPING['Uncorrected viosual acuity'], 
-    FEATURE_MAPPING['District'],
-    FEATURE_MAPPING['Non-cycloplegic SER']
-]
-
-FULL_FEATURES = BASIC_FEATURES + [
-    FEATURE_MAPPING['AL'],
-    FEATURE_MAPPING['Kf'],
-    FEATURE_MAPPING['Ks'],
-    FEATURE_MAPPING['AL/CR'],
-    FEATURE_MAPPING['ACD']
-]
-
-# 目标变量
-TARGET = FEATURE_MAPPING['Cycloplegic SER']
 
 # 定义模型
 def get_models():
@@ -128,27 +108,6 @@ def train_and_evaluate(X_train, y_train, X_val, y_val, model_name, model, featur
     joblib.dump(model, os.path.join(MODELS_DIR, model_filename))
     joblib.dump(scaler, os.path.join(MODELS_DIR, scaler_filename))
     
-    # 计算特征重要性（如果模型支持）
-    feature_importance = {}
-    if hasattr(model, 'feature_importances_'):
-        # 根据config中的映射，将原始列名转为映射后的列名
-        reverse_mapping = {v: k for k, v in FEATURE_MAPPING.items()}
-        feature_names = [reverse_mapping.get(col, col) for col in X_train.columns]
-        importances = model.feature_importances_
-        indices = np.argsort(importances)[::-1]
-        
-        for i in range(len(feature_names)):
-            feature_importance[feature_names[indices[i]]] = float(importances[indices[i]])
-    elif model_name == 'Linear' or model_name == 'LassoCV':
-        # 根据config中的映射，将原始列名转为映射后的列名
-        reverse_mapping = {v: k for k, v in FEATURE_MAPPING.items()}
-        feature_names = [reverse_mapping.get(col, col) for col in X_train.columns]  
-        importances = np.abs(model.coef_)
-        indices = np.argsort(importances)[::-1]
-        
-        for i in range(len(feature_names)):
-            feature_importance[feature_names[indices[i]]] = float(importances[indices[i]])
-    
     # 返回结果
     results = {
         'model_name': model_name,
@@ -159,39 +118,12 @@ def train_and_evaluate(X_train, y_train, X_val, y_val, model_name, model, featur
         'val_mae': val_mae,
         'val_rmse': val_rmse,
         'val_r2': val_r2,
-        'feature_importance': feature_importance,
+        # 'feature_importance': feature_importance,
         'model_file': model_filename,
         'scaler_file': scaler_filename
     }
     
     return results
-
-def plot_feature_importance(results, output_dir):
-    """绘制特征重要性图"""
-    for result in results:
-        if not result['feature_importance']:
-            continue
-            
-        model_name = result['model_name']
-        feature_set = result['feature_set']
-        
-        # 排序特征重要性
-        importances = result['feature_importance']
-        sorted_importances = sorted(importances.items(), key=lambda x: x[1], reverse=True)        
-        features = [x[0] for x in sorted_importances]
-        values = [x[1] for x in sorted_importances]
-        
-        # 绘图
-        plt.figure(figsize=(10, 6))
-        plt.barh(features, values)
-        plt.xlabel('Importance')
-        plt.ylabel('Features')
-        plt.title(f'{model_name} - {feature_set} Feature Importance')
-        plt.tight_layout()
-        
-        # 保存图片
-        plt.savefig(os.path.join(output_dir, f'{model_name}_{feature_set}_feature_importance.png'))
-        plt.close()
 
 
 def generate_report(results, output_dir):
@@ -245,13 +177,6 @@ def generate_report(results, output_dir):
             f.write(f"{model_name} ({feature_set}):\n")
             f.write(f"  训练集: MAE={result['train_mae']:.4f}, RMSE={result['train_rmse']:.4f}, R²={result['train_r2']:.4f}\n")
             f.write(f"  验证集: MAE={result['val_mae']:.4f}, RMSE={result['val_rmse']:.4f}, R²={result['val_r2']:.4f}\n")
-            
-            # 特征重要性
-            if result['feature_importance']:
-                f.write("  特征重要性:\n")
-                sorted_importance = sorted(result['feature_importance'].items(), key=lambda x: x[1], reverse=True)
-                for feature, importance in sorted_importance:
-                    f.write(f"    {feature}: {importance:.4f}\n")
             
             f.write("\n")
         
@@ -321,7 +246,7 @@ def main():
     
     # 生成可视化和报告
     print("\n生成结果报告和可视化...")
-    plot_feature_importance(all_results, RESULTS_DIR)
+    # plot_feature_importance(all_results, RESULTS_DIR)
     generate_report(all_results, RESULTS_DIR)
     
     print(f"\n完成！结果已保存到 {RESULTS_DIR} 目录")

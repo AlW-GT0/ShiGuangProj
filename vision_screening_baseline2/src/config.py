@@ -81,12 +81,23 @@ FEATURE_MAPPINGS = {
 
 # 年龄分组
 AGE_GROUPS = {
-    '<=4': (0, 4),
-    '5-11': (5, 11),
-    '12-15': (12, 15),
-    '16-18': (16, 18),
-    '>18': (19, 100)
+    '小学(5-11岁)': (5, 11),
+    '初中(12-15岁)': (12, 15),
+    '高中(16-18岁)': (16, 18),
 }
+# {
+#     # '学龄前(4-5岁)': (0, 4),
+#     '小学(5-11岁)': (5, 11),
+#     '初中(12-15岁)': (12, 15),
+#     '高中(16-18岁)': (16, 18)
+# }
+# {
+#     '<=4': (0, 4),
+#     '5-11': (5, 11),
+#     '12-15': (12, 15),
+#     '16-18': (16, 18),
+#     '>18': (19, 100)
+# }
 
 # 屈光度分组
 SER_GROUPS = {
@@ -103,3 +114,25 @@ SPLIT_PARAMS = {
     'test_size': 0.2,  # 验证集比例
     'random_state': 42  # 随机种子
 }
+
+
+# 定义两组特征
+BASIC_FEATURES = [
+    FEATURE_MAPPING['Age'], 
+    FEATURE_MAPPING['Gender'], 
+    FEATURE_MAPPING['Wearing refractive correction'], 
+    FEATURE_MAPPING['Uncorrected viosual acuity'], 
+    FEATURE_MAPPING['District'],
+    FEATURE_MAPPING['Non-cycloplegic SER']
+]
+
+FULL_FEATURES = BASIC_FEATURES + [
+    FEATURE_MAPPING['AL'],
+    FEATURE_MAPPING['Kf'],
+    FEATURE_MAPPING['Ks'],
+    FEATURE_MAPPING['AL/CR'],
+    FEATURE_MAPPING['ACD']
+]
+
+# 目标变量
+TARGET = FEATURE_MAPPING['Cycloplegic SER']
