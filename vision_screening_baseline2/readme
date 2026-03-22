@@ -1,3 +1,0 @@
-这是<视光机器学习合并数据版>
-execute one by one:
-double_data => split_dataset => train_models => subgroup_analysis
