@@ -58,11 +58,11 @@ for modelname in MODEL_LIST:
     # 对于线性模型，可以使用LinearExplainer
     # explainer = shap.LinearExplainer(model, X_scaled, feature_perturbation="correlation_dependent")
     # 使用KernelExplainer（更通用但较慢）
-    explainer = shap.KernelExplainer(model.predict, X_scaled[:100])
+    explainer = shap.KernelExplainer(model.predict, X_scaled)
     # 5. 计算SHAP值
     print("计算SHAP值（这可能需要一些时间）...")
     # 为了节省时间，可以只计算部分样本
-    X_sample = X_scaled[:100]  # 使用前100个样本
+    X_sample = X_scaled  # 原使用前100个样本，现使用全部
     shap_values = explainer.shap_values(X_sample)
 
     # 6. 可视化SHAP结果
