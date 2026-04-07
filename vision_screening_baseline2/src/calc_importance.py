@@ -9,8 +9,9 @@ from config import FULL_FEATURES, TARGET, MODEL_LIST
 from train_models import preprocess_data
 
 # 设置中文字体支持
-plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans']
-plt.rcParams['axes.unicode_minus'] = False
+# plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans']
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False   # 解决负号显示问题
 
 # 定义模型路径
 result_dir = './results/shap/'
@@ -51,7 +52,12 @@ for modelname in MODEL_LIST:
 
     # 3. 数据标准化（使用加载的scaler）
     print("\n正在对数据进行标准化...")
-    X_scaled = scaler.transform(X_full)
+    # 为了节省时间，可以只选取部分样本
+    X_sample = X_full[:100]
+    print(type(X_sample))
+    SampleDataPath = f'{result_dir}sampledata.csv'
+    X_sample.to_csv(SampleDataPath, encoding='utf-8')
+    X_scaled = scaler.transform(X_sample)
 
     # 4. 创建SHAP解释器
     print("\n创建SHAP解释器...")
@@ -61,9 +67,7 @@ for modelname in MODEL_LIST:
     explainer = shap.KernelExplainer(model.predict, X_scaled)
     # 5. 计算SHAP值
     print("计算SHAP值（这可能需要一些时间）...")
-    # 为了节省时间，可以只计算部分样本
-    X_sample = X_scaled  # 原使用前100个样本，现使用全部
-    shap_values = explainer.shap_values(X_sample)
+    shap_values = explainer.shap_values(X_scaled)
 
     # 6. 可视化SHAP结果
     print("\n生成SHAP可视化图表...")
@@ -78,8 +82,8 @@ for modelname in MODEL_LIST:
 
     # 6.2 条形图（平均绝对SHAP值）
     plt.figure(figsize=(10, 6))
-    top10_shapvalues = shap_values[:10] # 将下一行shapvalues改为这一行的top10可以不展示贡献度极低的value
-    shap.summary_plot(shap_values, X_sample, feature_names=FULL_FEATURES, 
+    top10_shapvalues = shap_values[:10] # 将6.2与6.3中shap_values改为这一行的top10可以不展示贡献度极低的value
+    shap.summary_plot(top10_shapvalues, X_sample, feature_names=FULL_FEATURES, 
                     plot_type="bar", show=False)
     plt.title(f'SHAP Feature Importance Bar Plot ({modelname} Full Model)')
     plt.tight_layout()
@@ -90,7 +94,7 @@ for modelname in MODEL_LIST:
 
     # 6.3 输出特征重要性排序
     print("\n特征重要性排序（基于平均绝对SHAP值）:")
-    mean_shap = np.abs(shap_values).mean(axis=0)
+    mean_shap = np.abs(top10_shapvalues).mean(axis=0)
     feature_importance = pd.DataFrame({
         'feature': FULL_FEATURES,
         'importance': mean_shap
