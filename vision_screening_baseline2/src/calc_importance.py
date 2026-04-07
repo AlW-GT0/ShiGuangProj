@@ -9,8 +9,8 @@ from config import FULL_FEATURES, TARGET, MODEL_LIST
 from train_models import preprocess_data
 
 # 设置中文字体支持
-# plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans']
-plt.rcParams['font.sans-serif'] = ['SimHei']
+from font_setup_cn import setup_matplotlib_cn_font
+font_prop, font_path = setup_matplotlib_cn_font("./data/fonts")
 plt.rcParams['axes.unicode_minus'] = False   # 解决负号显示问题
 
 # 定义模型路径
@@ -80,11 +80,22 @@ for modelname in MODEL_LIST:
     # plt.savefig(f'{result_dir}/shap_summary_full.png', dpi=300, bbox_inches='tight')
     # plt.show()
 
+    # 计算特征重要性并获取前十的特征
+    mean_shap = np.abs(shap_values).mean(axis=0)
+    feature_importance = pd.DataFrame({
+        'feature': FULL_FEATURES,
+        'importance': mean_shap
+    }).sort_values('importance', ascending=False)
+    # 获取前十的特征
+    top10_features = feature_importance.head(10)['feature'].values
+    top10_importance = feature_importance.head(10)['importance'].values
+
     # 6.2 条形图（平均绝对SHAP值）
     plt.figure(figsize=(10, 6))
-    top10_shapvalues = shap_values[:10] # 将6.2与6.3中shap_values改为这一行的top10可以不展示贡献度极低的value
-    shap.summary_plot(top10_shapvalues, X_sample, feature_names=FULL_FEATURES, 
-                    plot_type="bar", show=False)
+    shap.summary_plot(shap_values[:, feature_importance.head(10).index], 
+                  X_sample.iloc[:, feature_importance.head(10).index], 
+                  feature_names=top10_features, 
+                  plot_type="bar", show=False)
     plt.title(f'SHAP Feature Importance Bar Plot ({modelname} Full Model)')
     plt.tight_layout()
     savepath = f'{result_dir}/shap_bar_{modelname}_full.png'
@@ -94,11 +105,6 @@ for modelname in MODEL_LIST:
 
     # 6.3 输出特征重要性排序
     print("\n特征重要性排序（基于平均绝对SHAP值）:")
-    mean_shap = np.abs(top10_shapvalues).mean(axis=0)
-    feature_importance = pd.DataFrame({
-        'feature': FULL_FEATURES,
-        'importance': mean_shap
-    }).sort_values('importance', ascending=False)
     print(feature_importance.to_string(index=False))
 
     # # 7. 保存特征重要性结果到CSV

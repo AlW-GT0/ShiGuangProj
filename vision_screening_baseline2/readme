@@ -9,6 +9,8 @@ double_data => split_dataset => train_models => subgroup_analysis
 double_data => split_dataset => train_models => subgroup_analysis 
                                              => calc_importance
 calc_importance亟待测试，若不能通过会出现2.2.1版本
-(baseline2.2.1)
+(baseline2.2.2)
 目前固定为执行100条数据&输出前十重要的属性
 问题：calc_importance绘制图片中文变成方框
+--通过添加simhei.ttf至本地，解决中文无法显示的错误
+另外添加_envprepare\_exeshapley\_exesubgroup简化执行过程
