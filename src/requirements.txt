@@ -3,3 +3,4 @@ openpyxl
 matplotlib
 scikit-learn
 xgboost
+shap

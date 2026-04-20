@@ -23,7 +23,9 @@ def evaluate(X_train, y_train, X_val, y_val, model_name, model, feature_set_name
     val_r2 = r2_score(y_val, y_val_pred)
     
     # 生成文件名
-    save_dir = "./baresults/"
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    save_dir = os.path.join(project_root, "baresults")
+    os.makedirs(save_dir, exist_ok=True)
     filename = f"badata_{model_name}_{feature_set_name}.csv"
     filepath = os.path.join(save_dir, filename)
     
@@ -71,7 +73,7 @@ def baa():
         X_train_full, y_train, X_val_full, y_val, 
         model_name, model, 'full'
     )
-    print(f"  {model_name}: 验证集 MAE={result['val_mae']:.4f}, RMSE={result['val_rmse']:.4f}, R²={result['val_r2']:.4f}")
+    print(f"  {model_name}: 验证集 MAE={result['val_mae']:.4f}, RMSE={result['val_rmse']:.4f}, R2={result['val_r2']:.4f}")
 
 
 if __name__ == "__main__":

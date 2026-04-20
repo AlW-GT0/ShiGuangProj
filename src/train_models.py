@@ -164,12 +164,7 @@ def train_and_evaluate(X_train, y_train, X_val, y_val, model_name, model, featur
         'scaler_file': scaler_filename
     }
     
-    predictions = {
-        'train': y_train_pred,
-        'val': y_val_pred
-    }
-    
-    return results, predictions
+    return results
 
 def plot_feature_importance(results, output_dir):
     """绘制特征重要性图"""
@@ -298,29 +293,18 @@ def main():
     # 存储结果
     all_results = []
     
-    # 记录最佳模型预测结果
-    best_mae = float('inf')
-    best_predictions = None
-    best_model_info = ""
-    
     # 基本特征集
     print("\n使用基本特征集...")
     X_train_basic, y_train = preprocess_data(train_df, BASIC_FEATURES)
     X_val_basic, y_val = preprocess_data(val_df, BASIC_FEATURES)
     
     for model_name, model in models.items():
-        result, preds = train_and_evaluate(
+        result = train_and_evaluate(
             X_train_basic, y_train, X_val_basic, y_val, 
             model_name, model, 'basic'
         )
         all_results.append(result)
         print(f"  {model_name}: 验证集 MAE={result['val_mae']:.4f}, RMSE={result['val_rmse']:.4f}, R²={result['val_r2']:.4f}")
-        
-        # 检查是否为最佳模型
-        if result['val_mae'] < best_mae:
-            best_mae = result['val_mae']
-            best_predictions = preds
-            best_model_info = f"{model_name} (basic)"
     
     # 完整特征集
     print("\n使用完整特征集...")
@@ -328,36 +312,12 @@ def main():
     X_val_full, y_val = preprocess_data(val_df, FULL_FEATURES)
     
     for model_name, model in models.items():
-        result, preds = train_and_evaluate(
+        result = train_and_evaluate(
             X_train_full, y_train, X_val_full, y_val, 
             model_name, model, 'full'
         )
         all_results.append(result)
         print(f"  {model_name}: 验证集 MAE={result['val_mae']:.4f}, RMSE={result['val_rmse']:.4f}, R²={result['val_r2']:.4f}")
-        
-        # 检查是否为最佳模型
-        if result['val_mae'] < best_mae:
-            best_mae = result['val_mae']
-            best_predictions = preds
-            best_model_info = f"{model_name} (full)"
-    
-    # 保存最佳模型的预测状态到原始数据文件
-    if best_predictions:
-        print(f"\n正在保存最佳模型 ({best_model_info}) 的预测状态...")
-        
-        # 训练集: 1=预测在1.00D内, 2=预测不在
-        # 计算预测误差绝对值
-        train_diff = np.abs(train_df[TARGET] - best_predictions['train'])
-        train_df['Prediction_Status'] = np.where(train_diff <= 1.0, 1, 2)
-        
-        # 验证集
-        val_diff = np.abs(val_df[TARGET] - best_predictions['val'])
-        val_df['Prediction_Status'] = np.where(val_diff <= 1.0, 1, 2)
-        
-        # 保存回Excel
-        train_df.to_excel(TRAIN_DATA_PATH, index=False)
-        val_df.to_excel(VAL_DATA_PATH, index=False)
-        print(f"已更新数据文件，添加了 Prediction_Status 列: \n  {TRAIN_DATA_PATH}\n  {VAL_DATA_PATH}")
 
     # 生成可视化和报告
     print("\n生成结果报告和可视化...")
